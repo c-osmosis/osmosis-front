@@ -1,9 +1,13 @@
 import React, { FunctionComponent } from "react";
 
 import { Container, Navbar, NavbarBrand } from "reactstrap";
+import { observer } from "mobx-react";
+import { useStore } from "../../stores";
 
-export const HeaderLayout: FunctionComponent = props => {
+export const HeaderLayout: FunctionComponent = observer(props => {
   const { children } = props;
+
+  const { accountStore } = useStore();
 
   return (
     <div>
@@ -16,9 +20,10 @@ export const HeaderLayout: FunctionComponent = props => {
       >
         <Container>
           <NavbarBrand href="/">Osmosis</NavbarBrand>
+          {accountStore.bech32Address}
         </Container>
       </Navbar>
       <div>{children}</div>
     </div>
   );
-};
+});

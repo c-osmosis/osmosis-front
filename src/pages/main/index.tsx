@@ -10,6 +10,7 @@ import {
   Container,
   Row
 } from "reactstrap";
+import { PoolsInfo } from "./pools";
 
 export const MainPage: FunctionComponent = () => {
   return (
@@ -48,7 +49,9 @@ export const MainPage: FunctionComponent = () => {
             {/* 대충 풀 관련된 정보 보여주는 카드 */}
             <Row>
               <Card>
-                <CardBody>대충 풀 정보 보여주는 카드 or 풀 선택</CardBody>
+                <CardBody>
+                  <PoolsInfo />
+                </CardBody>
               </Card>
             </Row>
             {/* 대충 트랜잭션 보내는 버튼 */}
