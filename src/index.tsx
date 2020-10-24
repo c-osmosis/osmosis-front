@@ -5,10 +5,13 @@ import "./global.scss";
 
 import { MainPage } from "./pages/main";
 import { HashRouter, Route } from "react-router-dom";
+import { StoreProvider } from "./stores";
 
 ReactDOM.render(
-  <HashRouter>
-    <Route exact path="/" component={MainPage} />
-  </HashRouter>,
+  <StoreProvider>
+    <HashRouter>
+      <Route exact path="/" component={MainPage} />
+    </HashRouter>
+  </StoreProvider>,
   document.getElementById("app")
 );
