@@ -1,0 +1,5 @@
+**/*.png
+**/*.svg
+.DS_Store
+
+src/vendor/*

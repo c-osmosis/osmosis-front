@@ -1,0 +1,8 @@
+$fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
+@import "~@fortawesome/fontawesome-free/scss/fontawesome";
+@import "~@fortawesome/fontawesome-free/scss/solid";
+@import "~@fortawesome/fontawesome-free/scss/brands";
+
+// Core styles
+$asset-base-path: "/Users/yjh/osmosis-front/src/vendor";
+@import "./vendor/scss/blk-design-system-react.scss";
