@@ -296,7 +296,7 @@ export const MainPage: FunctionComponent = observer(() => {
               <Col />
               <Col>
                 <Button
-                  color="primary"
+                  color="success"
                   size="lg"
                   block
                   disabled={

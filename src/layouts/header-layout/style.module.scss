@@ -22,7 +22,7 @@
 
 .squares {
   animation: move-left-right 1s infinite;
-  @include linear-gradient(#ba54f5, #e14eca);
+  @include linear-gradient(#0098f0, #00f2c3);
   position: absolute;
   transition: 0.5s ease-out;
   overflow: hidden;
