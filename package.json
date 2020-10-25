@@ -16,6 +16,7 @@
     "@chainapsis/cosmosjs": "git+https://github.com/chainapsis/cosmosjs-dist.git#20b1f34",
     "@fortawesome/fontawesome-free": "^5.15.1",
     "axios": "^0.19.2",
+    "classnames": "^2.2.6",
     "mobx": "^5.15.0",
     "mobx-react": "^6.1.3",
     "mobx-utils": "^5.5.2",
@@ -26,6 +27,7 @@
     "reactstrap": "^8.6.0"
   },
   "devDependencies": {
+    "@types/classnames": "^2.2.10",
     "@types/react": "^16.9.2",
     "@types/react-dom": "^16.9.0",
     "@types/react-router-dom": "^5.1.6",
