@@ -16,7 +16,7 @@ import {
   DropdownItem,
   DropdownToggle
 } from "reactstrap";
-import { PoolsInfo } from "./pools";
+import { useSelectPool } from "./pools";
 import { chainInfo, currencies } from "../../config";
 import { OsmosisApi } from "../../osmosisjs/osmosis";
 import { MsgSwapExactAmountIn } from "../../osmosisjs/x/gamm";
@@ -29,7 +29,7 @@ import { useStore } from "../../stores";
 import Axios from "axios";
 
 export const MainPage: FunctionComponent = observer(() => {
-  const { accountStore } = useStore();
+  const { accountStore, poolStore } = useStore();
 
   const [tokenInDenom, _setTokenInDenom] = useState("");
   const [tokenOutDenom, setTokenOutDenom] = useState("");
@@ -45,7 +45,8 @@ export const MainPage: FunctionComponent = observer(() => {
 
   const [tokenInAmount, setTokenInAmount] = useState("");
   const [estimatedTokenOutAmount, setEstimatedTokenOutAmount] = useState("");
-  const [poolId, setPoolId] = useState("");
+
+  const { poolId } = useSelectPool(poolStore, tokenInDenom, tokenOutDenom);
 
   useEffect(() => {
     if (
@@ -275,19 +276,6 @@ export const MainPage: FunctionComponent = observer(() => {
                       </Card>
                     </Col>
                   </Row>
-                </CardBody>
-              </Card>
-            </Row>
-            {/* 대충 풀 관련된 정보 보여주는 카드 */}
-            <Row>
-              <Card>
-                <CardHeader>Select Pool</CardHeader>
-                <CardBody>
-                  <PoolsInfo
-                    tokenInDenom={tokenInDenom}
-                    tokenOutDenom={tokenOutDenom}
-                    onPoolSelected={(id: string) => setPoolId(id)}
-                  />
                 </CardBody>
               </Card>
             </Row>

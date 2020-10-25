@@ -1,55 +1,35 @@
-import React, { FunctionComponent, useEffect, useState } from "react";
-import { observer } from "mobx-react";
-import { useStore } from "../../stores";
-import { ListGroup, ListGroupItem } from "reactstrap";
-import { Dec } from "@chainapsis/cosmosjs/common/decimal";
+import { useEffect, useMemo, useState } from "react";
+import { PoolStore } from "../../stores/pool";
 
-export const PoolsInfo: FunctionComponent<{
-  tokenInDenom: string;
-  tokenOutDenom: string;
-  onPoolSelected: (id: string) => void;
-}> = observer(({ tokenInDenom, tokenOutDenom, onPoolSelected }) => {
-  const { poolStore } = useStore();
-
-  const [selectedPoolId, _setSelectedPoolId] = useState("");
-
-  const setSelectedPoolId = (id: string) => {
-    _setSelectedPoolId(id);
-
-    onPoolSelected(id);
-  };
+export const useSelectPool = (
+  poolStore: PoolStore,
+  tokenInDenom: string,
+  tokenOutDenom: string
+) => {
+  const [poolId, setPoolId] = useState("");
 
   useEffect(() => {
     if (!tokenInDenom || !tokenOutDenom) {
-      setSelectedPoolId("");
+      setPoolId("");
     }
   }, [tokenInDenom, tokenOutDenom]);
 
-  return (
-    <div>
-      <ListGroup>
-        {poolStore
-          .getAvailablePools(
-            tokenInDenom || "unknown",
-            tokenOutDenom || "unknown"
-          )
-          .map((pool, i) => {
-            return (
-              <ListGroupItem
-                key={i.toString()}
-                tag="button"
-                active={pool.id === selectedPoolId}
-                onClick={e => {
-                  e.preventDefault();
-
-                  setSelectedPoolId(pool.id);
-                }}
-              >
-                Fee: {new Dec(pool.swapFee).toString(2)}%
-              </ListGroupItem>
-            );
-          })}
-      </ListGroup>
-    </div>
+  const pools = useMemo(
+    () =>
+      poolStore.getAvailablePools(
+        tokenInDenom || "unknown",
+        tokenOutDenom || "unknown"
+      ),
+    [poolStore.pools, tokenInDenom, tokenOutDenom]
   );
-});
+
+  useEffect(() => {
+    if (pools.length > 0) {
+      setPoolId(pools[0].id);
+    }
+  }, [pools]);
+
+  return {
+    poolId
+  };
+};
