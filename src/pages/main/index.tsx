@@ -14,7 +14,8 @@ import {
   Row,
   DropdownMenu,
   DropdownItem,
-  DropdownToggle
+  DropdownToggle,
+  ButtonGroup
 } from "reactstrap";
 import { useSelectPool } from "./pools";
 import { chainInfo, currencies } from "../../config";
@@ -28,7 +29,64 @@ import { observer } from "mobx-react";
 import { useStore } from "../../stores";
 import Axios from "axios";
 
+enum Role {
+  Swap,
+  Pools
+}
+
 export const MainPage: FunctionComponent = observer(() => {
+  const [role, setRole] = useState<Role>(Role.Swap);
+
+  return (
+    <HeaderLayout>
+      <Container
+        fluid
+        style={{
+          marginTop: "2rem"
+        }}
+      >
+        <Row>
+          <Col lg={4} md={2} />
+          <Col>
+            <Row>
+              <ButtonGroup
+                size="lg"
+                style={{ width: "100%", display: "flex", marginBottom: "1rem" }}
+              >
+                <Button
+                  style={{ flex: 1 }}
+                  color={role === Role.Swap ? "success" : undefined}
+                  onClick={e => {
+                    e.preventDefault();
+
+                    setRole(Role.Swap);
+                  }}
+                >
+                  Swap
+                </Button>
+                <Button
+                  style={{ flex: 1 }}
+                  color={role === Role.Pools ? "success" : undefined}
+                  onClick={e => {
+                    e.preventDefault();
+
+                    setRole(Role.Pools);
+                  }}
+                >
+                  Pools
+                </Button>
+              </ButtonGroup>
+            </Row>
+            {role === Role.Swap ? <SwapSection /> : null}
+          </Col>
+          <Col lg={4} md={2} />
+        </Row>
+      </Container>
+    </HeaderLayout>
+  );
+});
+
+export const SwapSection: FunctionComponent = observer(() => {
   const { accountStore, poolStore } = useStore();
 
   const [tokenInDenom, _setTokenInDenom] = useState("");
@@ -162,157 +220,133 @@ export const MainPage: FunctionComponent = observer(() => {
   };
 
   return (
-    <HeaderLayout>
-      <Container
-        fluid
-        style={{
-          marginTop: "2rem"
-        }}
-      >
-        <Row>
-          <Col lg={4} md={2} />
-          <Col>
-            {/* 대충 사고팔 자산 선택하는 카드 */}
+    <React.Fragment>
+      <Row>
+        <Card>
+          <CardBody>
             <Row>
-              <Card>
-                <CardBody>
-                  <Row>
-                    <Col>
-                      <Card style={{ textAlign: "center" }}>
-                        <CardHeader>Token to sell</CardHeader>
-                        <CardBody>
-                          <Dropdown
-                            isOpen={isTokenInDropdownOpen}
-                            toggle={() =>
-                              setIsTokenInDropdownOpen(value => !value)
-                            }
-                          >
-                            <DropdownToggle caret>
-                              {currencies.find(
-                                cur => cur.coinMinimalDenom === tokenInDenom
-                              )?.coinDenom || "Select"}
-                            </DropdownToggle>
-                            <DropdownMenu>
-                              {currencies.map(currency => {
-                                return (
-                                  <DropdownItem
-                                    onClick={e => {
-                                      e.preventDefault();
-
-                                      setTokenInDenom(
-                                        currency.coinMinimalDenom
-                                      );
-                                    }}
-                                  >
-                                    {currency.coinDenom}
-                                  </DropdownItem>
-                                );
-                              })}
-                            </DropdownMenu>
-                          </Dropdown>
-                        </CardBody>
-                        <CardFooter>
-                          <Input
-                            placeholder="Amount"
-                            type="number"
-                            value={tokenInAmount}
-                            onChange={e => {
-                              e.preventDefault();
-
-                              setTokenInAmount(e.target.value);
-                            }}
-                          />
-                        </CardFooter>
-                      </Card>
-                    </Col>
-                    <Col xs={3} />
-                    <Col>
-                      <Card style={{ textAlign: "center" }}>
-                        <CardHeader>Token to buy</CardHeader>
-                        <CardBody>
-                          <Dropdown
-                            isOpen={isTokenOutDropdownOpen}
-                            toggle={() =>
-                              setIsTokenOutDropdownOpen(value => !value)
-                            }
-                          >
-                            <DropdownToggle caret>
-                              {currencies.find(
-                                cur => cur.coinMinimalDenom === tokenOutDenom
-                              )?.coinDenom || "Select"}
-                            </DropdownToggle>
-                            <DropdownMenu>
-                              {currencies.map(currency => {
-                                if (
-                                  currency.coinMinimalDenom === tokenInDenom
-                                ) {
-                                  return null;
-                                }
-
-                                return (
-                                  <DropdownItem
-                                    onClick={e => {
-                                      e.preventDefault();
-
-                                      setTokenOutDenom(
-                                        currency.coinMinimalDenom
-                                      );
-                                    }}
-                                  >
-                                    {currency.coinDenom}
-                                  </DropdownItem>
-                                );
-                              })}
-                            </DropdownMenu>
-                          </Dropdown>
-                        </CardBody>
-                        <CardFooter>
-                          <Input
-                            placeholder="Amount"
-                            readOnly
-                            style={{
-                              backgroundColor: "transparent",
-                              color: "rgba(255, 255, 255, 0.8)"
-                            }}
-                            value={estimatedTokenOutAmount}
-                          />
-                        </CardFooter>
-                      </Card>
-                    </Col>
-                  </Row>
-                </CardBody>
-              </Card>
-            </Row>
-            {/* 대충 트랜잭션 보내는 버튼 */}
-            <Row>
-              <Col />
               <Col>
-                <Button
-                  color="success"
-                  size="lg"
-                  block
-                  disabled={
-                    !tokenInDenom ||
-                    !tokenOutDenom ||
-                    !tokenInAmount ||
-                    !poolId ||
-                    !accountStore.bech32Address
-                  }
-                  onClick={async e => {
-                    e.preventDefault();
+                <Card style={{ textAlign: "center" }}>
+                  <CardHeader>Token to sell</CardHeader>
+                  <CardBody>
+                    <Dropdown
+                      isOpen={isTokenInDropdownOpen}
+                      toggle={() => setIsTokenInDropdownOpen(value => !value)}
+                    >
+                      <DropdownToggle caret>
+                        {currencies.find(
+                          cur => cur.coinMinimalDenom === tokenInDenom
+                        )?.coinDenom || "Select"}
+                      </DropdownToggle>
+                      <DropdownMenu>
+                        {currencies.map(currency => {
+                          return (
+                            <DropdownItem
+                              onClick={e => {
+                                e.preventDefault();
 
-                    await sendSwapMsg();
-                  }}
-                >
-                  Swap
-                </Button>
+                                setTokenInDenom(currency.coinMinimalDenom);
+                              }}
+                            >
+                              {currency.coinDenom}
+                            </DropdownItem>
+                          );
+                        })}
+                      </DropdownMenu>
+                    </Dropdown>
+                  </CardBody>
+                  <CardFooter>
+                    <Input
+                      placeholder="Amount"
+                      type="number"
+                      value={tokenInAmount}
+                      onChange={e => {
+                        e.preventDefault();
+
+                        setTokenInAmount(e.target.value);
+                      }}
+                    />
+                  </CardFooter>
+                </Card>
               </Col>
-              <Col />
+              <Col xs={3} />
+              <Col>
+                <Card style={{ textAlign: "center" }}>
+                  <CardHeader>Token to buy</CardHeader>
+                  <CardBody>
+                    <Dropdown
+                      isOpen={isTokenOutDropdownOpen}
+                      toggle={() => setIsTokenOutDropdownOpen(value => !value)}
+                    >
+                      <DropdownToggle caret>
+                        {currencies.find(
+                          cur => cur.coinMinimalDenom === tokenOutDenom
+                        )?.coinDenom || "Select"}
+                      </DropdownToggle>
+                      <DropdownMenu>
+                        {currencies.map(currency => {
+                          if (currency.coinMinimalDenom === tokenInDenom) {
+                            return null;
+                          }
+
+                          return (
+                            <DropdownItem
+                              onClick={e => {
+                                e.preventDefault();
+
+                                setTokenOutDenom(currency.coinMinimalDenom);
+                              }}
+                            >
+                              {currency.coinDenom}
+                            </DropdownItem>
+                          );
+                        })}
+                      </DropdownMenu>
+                    </Dropdown>
+                  </CardBody>
+                  <CardFooter>
+                    <Input
+                      placeholder="Amount"
+                      readOnly
+                      style={{
+                        backgroundColor: "transparent",
+                        color: "rgba(255, 255, 255, 0.8)"
+                      }}
+                      value={estimatedTokenOutAmount}
+                    />
+                  </CardFooter>
+                </Card>
+              </Col>
             </Row>
-          </Col>
-          <Col lg={4} md={2} />
-        </Row>
-      </Container>
-    </HeaderLayout>
+          </CardBody>
+        </Card>
+      </Row>
+      {/* 대충 트랜잭션 보내는 버튼 */}
+      <Row>
+        <Col />
+        <Col>
+          <Button
+            color="success"
+            size="lg"
+            block
+            disabled={
+              !tokenInDenom ||
+              !tokenOutDenom ||
+              !tokenInAmount ||
+              !poolId ||
+              !accountStore.bech32Address
+            }
+            onClick={async e => {
+              e.preventDefault();
+
+              await sendSwapMsg();
+            }}
+          >
+            Swap
+          </Button>
+        </Col>
+        <Col />
+      </Row>
+    </React.Fragment>
   );
 });
