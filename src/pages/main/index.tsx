@@ -270,6 +270,10 @@ export const MainPage: FunctionComponent = observer(() => {
                           <Input
                             placeholder="Amount"
                             readOnly
+                            style={{
+                              backgroundColor: "transparent",
+                              color: "rgba(255, 255, 255, 0.8)"
+                            }}
                             value={estimatedTokenOutAmount}
                           />
                         </CardFooter>
