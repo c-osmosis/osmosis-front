@@ -1,0 +1,15 @@
+.pool-selection-container {
+  padding: 1rem 0;
+
+  cursor: pointer;
+}
+
+.pool-modal {
+  :global(.modal-body) {
+    padding: 0;
+
+    :global(.card) {
+      margin: 0;
+    }
+  }
+}
