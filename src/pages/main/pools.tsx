@@ -2,6 +2,7 @@ import React, { FunctionComponent, useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { useStore } from "../../stores";
 import { ListGroup, ListGroupItem } from "reactstrap";
+import { Dec } from "@chainapsis/cosmosjs/common/decimal";
 
 export const PoolsInfo: FunctionComponent<{
   tokenInDenom: string;
@@ -44,7 +45,7 @@ export const PoolsInfo: FunctionComponent<{
                   setSelectedPoolId(pool.id);
                 }}
               >
-                {pool.id}
+                Fee: {new Dec(pool.swapFee).toString(2)}%
               </ListGroupItem>
             );
           })}
