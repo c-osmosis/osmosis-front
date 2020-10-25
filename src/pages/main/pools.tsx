@@ -1,15 +1,54 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { useStore } from "../../stores";
+import { ListGroup, ListGroupItem } from "reactstrap";
 
-export const PoolsInfo: FunctionComponent = observer(() => {
+export const PoolsInfo: FunctionComponent<{
+  tokenInDenom: string;
+  tokenOutDenom: string;
+  onPoolSelected: (id: string) => void;
+}> = observer(({ tokenInDenom, tokenOutDenom, onPoolSelected }) => {
   const { poolStore } = useStore();
+
+  const [selectedPoolId, _setSelectedPoolId] = useState("");
+
+  const setSelectedPoolId = (id: string) => {
+    _setSelectedPoolId(id);
+
+    onPoolSelected(id);
+  };
+
+  useEffect(() => {
+    if (!tokenInDenom || !tokenOutDenom) {
+      setSelectedPoolId("");
+    }
+  }, [tokenInDenom, tokenOutDenom]);
 
   return (
     <div>
-      {poolStore.pools.map((pool, i) => {
-        return <div key={i.toString()}>{pool.id}</div>;
-      })}
+      <ListGroup>
+        {poolStore
+          .getAvailablePools(
+            tokenInDenom || "unknown",
+            tokenOutDenom || "unknown"
+          )
+          .map((pool, i) => {
+            return (
+              <ListGroupItem
+                key={i.toString()}
+                tag="button"
+                active={pool.id === selectedPoolId}
+                onClick={e => {
+                  e.preventDefault();
+
+                  setSelectedPoolId(pool.id);
+                }}
+              >
+                {pool.id}
+              </ListGroupItem>
+            );
+          })}
+      </ListGroup>
     </div>
   );
 });

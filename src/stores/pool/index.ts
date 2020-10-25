@@ -38,4 +38,17 @@ export class PoolStore {
       this.pools = resultPools.data.pools;
     }
   }
+
+  public getAvailablePools(
+    tokenInDenom: string,
+    tokenOutDenom: string
+  ): Pool[] {
+    return this.pools.filter(pool => {
+      const poolDenoms = Object.keys(pool.records);
+      return (
+        poolDenoms.indexOf(tokenInDenom) >= 0 &&
+        poolDenoms.indexOf(tokenOutDenom) >= 0
+      );
+    });
+  }
 }
