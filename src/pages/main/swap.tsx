@@ -47,6 +47,8 @@ export const SwapSection: FunctionComponent = observer(() => {
 
   const { poolId } = useSelectPool(poolStore, tokenInDenom, tokenOutDenom);
 
+  const [estimationError, setEstimationError] = useState("");
+
   useEffect(() => {
     if (
       tokenInDenom &&
@@ -74,33 +76,43 @@ export const SwapSection: FunctionComponent = observer(() => {
         }
         const int = dec.mulTruncate(precision).truncate();
 
-        const result = await restInstance.get<{
-          tokenAmountOut: string;
-          spotPriceAfter: string;
-        }>(
-          `/osmosis/gamm/v1beta1/${poolId}/estimate/swap_exact_amount_in?sender=${
-            accountStore.bech32Address
-          }&tokenIn=${int.toString() +
-            currency.coinMinimalDenom}&tokenOutDenom=${tokenOutDenom}`
-        );
-
-        // TODO: handle error.
-        if (result.status === 200) {
-          const currency = currencies.find(
-            cur => cur.coinMinimalDenom === tokenOutDenom
+        try {
+          const result = await restInstance.get<{
+            tokenAmountOut: string;
+            spotPriceAfter: string;
+          }>(
+            `/osmosis/gamm/v1beta1/${poolId}/estimate/swap_exact_amount_in?sender=${
+              accountStore.bech32Address
+            }&tokenIn=${int.toString() +
+              currency.coinMinimalDenom}&tokenOutDenom=${tokenOutDenom}`
           );
-          if (!currency) {
-            throw new Error("TODO: handle error");
-          }
 
-          let dec = new Dec(result.data.tokenAmountOut);
-          let precision = new Dec(1);
-          for (let i = 0; i < currency.coinDecimals; i++) {
-            precision = precision.mul(new Dec(10));
-          }
-          dec = dec.quoTruncate(precision);
+          if (result.status === 200) {
+            const currency = currencies.find(
+              cur => cur.coinMinimalDenom === tokenOutDenom
+            );
+            if (!currency) {
+              throw new Error("TODO: handle error");
+            }
 
-          setEstimatedTokenOutAmount(dec.toString(currency.coinDecimals));
+            let dec = new Dec(result.data.tokenAmountOut);
+            let precision = new Dec(1);
+            for (let i = 0; i < currency.coinDecimals; i++) {
+              precision = precision.mul(new Dec(10));
+            }
+            dec = dec.quoTruncate(precision);
+
+            setEstimatedTokenOutAmount(dec.toString(currency.coinDecimals));
+            setEstimationError("");
+          }
+        } catch (e) {
+          if (e.response?.data?.message) {
+            setEstimationError(e.response.data.message);
+          } else {
+            setEstimationError(
+              "Failed to estimate the swap result by unknown reason"
+            );
+          }
         }
       })();
     } else {
@@ -157,15 +169,12 @@ export const SwapSection: FunctionComponent = observer(() => {
       )) as any;
 
       if (result.status !== 200 || result.statusText !== "OK") {
-        console.log("failed");
         toast.error("Failed to swap");
       } else {
         const code = result.data.code;
         if (code) {
-          console.log(result.data.raw_log);
           toast.error("Failed to swap: " + result.data.raw_log);
         } else {
-          console.log("success");
           toast("Success!");
         }
       }
@@ -282,6 +291,14 @@ export const SwapSection: FunctionComponent = observer(() => {
                 </Card>
               </Col>
             </Row>
+            {estimationError &&
+              tokenInDenom &&
+              tokenOutDenom &&
+              tokenInAmount && (
+                <div style={{ color: "red", textAlign: "center" }}>
+                  {estimationError}
+                </div>
+              )}
           </CardBody>
         </Card>
       </Row>
@@ -294,6 +311,7 @@ export const SwapSection: FunctionComponent = observer(() => {
             size="lg"
             block
             disabled={
+              estimationError.length > 0 ||
               !tokenInDenom ||
               !tokenOutDenom ||
               !tokenInAmount ||
