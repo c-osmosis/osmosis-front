@@ -51,22 +51,34 @@ export const ValidatorInfo: FunctionComponent<{
   const toggleModal = () => setIsModalOpen(value => !value);
 
   const moniker = validator.description.moniker;
+  const votingPower = validator.tokens;
 
   return (
-    <div>
+    <div style={{ display: "flex", alignItems: "center" }}>
       <p
         style={{
-          fontSize: "1.5rem",
-          marginTop: "10px",
-          marginLeft: "15px",
-          fontWeight: "bold",
-          display: "inline-block"
+          flex: "1 0 auto",
+          fontSize: "1.3rem",
+          marginLeft: "10px",
+          marginTop: "0px",
+          marginBottom: "0px",
+          fontWeight: "bold"
         }}
       >
         {moniker}
       </p>
+      <p
+        style={{
+          flex: "0 0 auto",
+          marginTop: "0px",
+          marginBottom: "0px",
+          marginRight: "10px"
+        }}
+      >
+        {votingPower}
+      </p>
       <Button
-        style={{ display: "inline-block", width: "140px", float: "right" }}
+        style={{ flex: "0 0 140px", width: "140px" }}
         type="submit"
         block
         color="success"
