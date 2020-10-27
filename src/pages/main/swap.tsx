@@ -209,7 +209,6 @@ export const SwapSection: FunctionComponent = observer(() => {
                   </CardFooter>
                 </Card>
               </Col>
-              <Col xs={3} />
               <Col>
                 <Card style={{ textAlign: "center", marginBottom: 0 }}>
                   <CardHeader>Token to buy</CardHeader>
