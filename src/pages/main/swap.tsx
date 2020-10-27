@@ -25,6 +25,8 @@ import {
   Row
 } from "reactstrap";
 
+import { toast } from "react-toastify";
+
 export const SwapSection: FunctionComponent = observer(() => {
   const { accountStore, poolStore } = useStore();
 
@@ -148,13 +150,25 @@ export const SwapSection: FunctionComponent = observer(() => {
         new Int("9999999999999999")
       );
 
-      console.log(
-        await cosmosJS.sendMsgs(
-          [msg],
-          { gas: "200000", memo: "", fee: [] },
-          "commit"
-        )
-      );
+      const result = (await cosmosJS.sendMsgs(
+        [msg],
+        { gas: "200000", memo: "", fee: [] },
+        "commit"
+      )) as any;
+
+      if (result.status !== 200 || result.statusText !== "OK") {
+        console.log("failed");
+        toast.error("Failed to swap");
+      } else {
+        const code = result.data.code;
+        if (code) {
+          console.log(result.data.raw_log);
+          toast.error("Failed to swap: " + result.data.raw_log);
+        } else {
+          console.log("success");
+          toast("Success!");
+        }
+      }
     }
   };
 
