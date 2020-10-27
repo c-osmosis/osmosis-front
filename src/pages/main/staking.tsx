@@ -11,7 +11,8 @@ import {
   Label,
   Modal,
   ModalBody,
-  Row
+  Row,
+  Table
 } from "reactstrap";
 import { Validator } from "../../stores/validator/types";
 import style from "./pools.module.scss";
@@ -54,42 +55,61 @@ export const ValidatorInfo: FunctionComponent<{
   const votingPower = validator.tokens;
 
   return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      <p
-        style={{
-          flex: "1 0 auto",
-          fontSize: "1.3rem",
-          marginLeft: "10px",
-          marginTop: "0px",
-          marginBottom: "0px",
-          fontWeight: "bold"
-        }}
-      >
-        {moniker}
-      </p>
-      <p
-        style={{
-          flex: "0 0 auto",
-          marginTop: "0px",
-          marginBottom: "0px",
-          marginRight: "10px"
-        }}
-      >
-        {votingPower}
-      </p>
-      <Button
-        style={{ flex: "0 0 140px", width: "140px" }}
-        type="submit"
-        block
-        color="success"
-        onClick={async e => {
-          e.preventDefault();
+    <div
+      style={{
+        display: "flex",
+        flex: "1 0 auto",
+        justifyContent: "center",
+        textAlign: "center",
+        fontSize: "1rem"
+      }}
+    >
+      <Table>
+        <thead>
+          <tr
+            style={{
+              fontWeight: "bold"
+            }}
+          >
+            <th>#</th>
+            <th>Name</th>
+            <th>Voting Power</th>
+            <th>Staking</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1</th>
+            <td> {moniker}</td>
+            <td>{votingPower}</td>
+            <td
+              style={{
+                display: "flex",
+                justifyContent: "center"
+              }}
+            >
+              <Button
+                style={{
+                  width: "0.75rem",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+                type="submit"
+                block
+                color="success"
+                onClick={async e => {
+                  e.preventDefault();
 
-          setIsModalOpen(true);
-        }}
-      >
-        Staking
-      </Button>
+                  setIsModalOpen(true);
+                }}
+              >
+                Staking
+              </Button>
+            </td>
+          </tr>
+        </tbody>
+      </Table>
       <Modal
         className={style.poolModal}
         isOpen={isModalOpen}

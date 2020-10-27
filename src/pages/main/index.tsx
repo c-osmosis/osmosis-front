@@ -26,7 +26,7 @@ export const MainPage: FunctionComponent = observer(() => {
       >
         <Row>
           <Col lg={4} md={2} />
-          <Col>
+          <Col lg={4} md={8}>
             <Row>
               <ButtonGroup
                 size="lg"
