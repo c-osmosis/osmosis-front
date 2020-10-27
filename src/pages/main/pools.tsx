@@ -207,6 +207,30 @@ export const PoolTxModal: FunctionComponent<{
     setRatios(ratios);
   }, [pool]);
 
+  const poolAmountOut = (() => {
+    const currency = currencies.find(
+      cur => cur.coinMinimalDenom === poolDenoms[0]
+    );
+    if (!currency) {
+      throw new Error("TODO: handle error");
+    }
+
+    let precision = new Dec(1);
+    for (let i = 0; i < currency.coinDecimals; i++) {
+      precision = precision.mul(new Dec(10));
+    }
+
+    if (deposits[poolDenoms[0]] && deposits[poolDenoms[0]] !== "0") {
+      const ratio = new Dec(deposits[poolDenoms[0]])
+        .mulTruncate(precision)
+        .quoTruncate(new Dec(pool.records[poolDenoms[0]].balance));
+
+      return ratio.mulTruncate(new Dec(pool.token.totalSupply)).truncate();
+    } else {
+      return new Int(0);
+    }
+  })();
+
   const sendJoinPoolMsg = async () => {
     const maxAmountsIn: MaxAmountIn[] = poolDenoms.map(denom => {
       // 병신같음...
@@ -224,27 +248,11 @@ export const PoolTxModal: FunctionComponent<{
 
     const keys = await cosmosJS.getKeys();
 
-    const currency = currencies.find(
-      cur => cur.coinMinimalDenom === poolDenoms[0]
-    );
-    if (!currency) {
-      throw new Error("TODO: handle error");
-    }
-
-    let precision = new Dec(1);
-    for (let i = 0; i < currency.coinDecimals; i++) {
-      precision = precision.mul(new Dec(10));
-    }
-
-    const ratio = new Dec(deposits[poolDenoms[0]])
-      .mulTruncate(precision)
-      .quoTruncate(new Dec(pool.records[poolDenoms[0]].balance));
-
     if (keys.length > 0) {
       const msg = new MsgJoinPool(
         AccAddress.fromBech32(keys[0].bech32Address),
         pool.id,
-        ratio.mulTruncate(new Dec(pool.token.totalSupply)).truncate(),
+        poolAmountOut,
         maxAmountsIn
       );
 
@@ -312,6 +320,9 @@ export const PoolTxModal: FunctionComponent<{
               </FormGroup>
             );
           })}
+          <p style={{ color: "white" }}>
+            Expected Token Out: {poolAmountOut.toString()}
+          </p>
           <Button
             type="submit"
             block
