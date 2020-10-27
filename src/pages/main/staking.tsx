@@ -15,6 +15,12 @@ import {
 } from "reactstrap";
 import { Validator } from "../../stores/validator/types";
 import style from "./pools.module.scss";
+import { chainInfo, stakingCurrency } from "../../config";
+import { Dec } from "@chainapsis/cosmosjs/common/decimal";
+import { AccAddress, ValAddress } from "@chainapsis/cosmosjs/common/address";
+import { GaiaApi } from "@chainapsis/cosmosjs/gaia/api";
+import { MsgDelegate } from "@chainapsis/cosmosjs/x/staking";
+import { Coin } from "@chainapsis/cosmosjs/common/coin";
 
 export const StakingSection: FunctionComponent = observer(() => {
   const { validatorStore } = useStore();
@@ -107,9 +113,48 @@ export const ValidatorInfo: FunctionComponent<{
 
 export const StakingModal: FunctionComponent<{
   validator: Validator;
-}> = ({ validator }) => {
-  const validatorAddress = validator.operator_address;
-  console.log("validatorAddress", validatorAddress);
+}> = observer(({ validator }) => {
+  const { accountStore } = useStore();
+
+  const [amount, setAmount] = useState("");
+
+  const sendStakingMsg = async () => {
+    const cosmosJS = new GaiaApi({
+      chainId: chainInfo.chainId,
+      rpc: chainInfo.rpc,
+      rest: chainInfo.rest,
+      walletProvider: window.cosmosJSWalletProvider!
+    });
+
+    cosmosJS.isStargate = true;
+
+    await cosmosJS.enable();
+
+    const keys = await cosmosJS.getKeys();
+
+    let precision = new Dec(1);
+    for (let i = 0; i < stakingCurrency.coinDecimals; i++) {
+      precision = precision.mul(new Dec(10));
+    }
+
+    const amountDec = new Dec(amount).mulTruncate(precision);
+
+    if (keys.length > 0) {
+      const msg = new MsgDelegate(
+        AccAddress.fromBech32(keys[0].bech32Address),
+        ValAddress.fromBech32(validator.operator_address),
+        new Coin(stakingCurrency.coinMinimalDenom, amountDec.truncate())
+      );
+
+      console.log(
+        await cosmosJS.sendMsgs(
+          [msg],
+          { gas: "200000", memo: "", fee: [] },
+          "commit"
+        )
+      );
+    }
+  };
 
   return (
     <div>
@@ -118,7 +163,15 @@ export const StakingModal: FunctionComponent<{
         <CardBody>
           <FormGroup key="staking">
             <Label>Amount</Label>
-            <Input type="number" value={0} />
+            <Input
+              type="number"
+              value={amount}
+              onChange={e => {
+                e.preventDefault();
+
+                setAmount(e.target.value);
+              }}
+            />
           </FormGroup>
           <Button
             type="submit"
@@ -127,8 +180,9 @@ export const StakingModal: FunctionComponent<{
             onClick={async e => {
               e.preventDefault();
 
-              console.log("clicked");
+              await sendStakingMsg();
             }}
+            disabled={!accountStore.bech32Address}
           >
             Send Staking
           </Button>
@@ -136,4 +190,4 @@ export const StakingModal: FunctionComponent<{
       </Card>
     </div>
   );
-};
+});
