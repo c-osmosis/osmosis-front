@@ -3,12 +3,14 @@ import React, { FunctionComponent, useState } from "react";
 import { HeaderLayout } from "../../layouts/header-layout";
 import { Button, Col, Container, Row, ButtonGroup } from "reactstrap";
 import { PoolsSection } from "./pools";
+import { StakingSection } from "./staking";
 import { observer } from "mobx-react";
 import { SwapSection } from "./swap";
 
 enum Role {
   Swap,
-  Pools
+  Pools,
+  Staking
 }
 
 export const MainPage: FunctionComponent = observer(() => {
@@ -52,10 +54,22 @@ export const MainPage: FunctionComponent = observer(() => {
                 >
                   Pools
                 </Button>
+                <Button
+                  style={{ flex: 1 }}
+                  color={role === Role.Staking ? "success" : undefined}
+                  onClick={e => {
+                    e.preventDefault();
+
+                    setRole(Role.Staking);
+                  }}
+                >
+                  Staking
+                </Button>
               </ButtonGroup>
             </Row>
             {role === Role.Swap && <SwapSection />}
             {role === Role.Pools && <PoolsSection />}
+            {role === Role.Staking && <StakingSection />}
           </Col>
           <Col lg={4} md={2} />
         </Row>

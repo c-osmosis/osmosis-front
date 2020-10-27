@@ -17,7 +17,7 @@ export const currencies: Currency[] = [
 export const chainInfo: ChainInfo = {
   rpc: "http://localhost:26657",
   rest: "http://localhost:1317",
-  chainId: "test-1",
+  chainId: "osmosis-4",
   chainName: "Osmosis",
   stakeCurrency: {
     coinDenom: "STAKE",
