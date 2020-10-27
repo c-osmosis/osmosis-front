@@ -126,6 +126,8 @@ export const SwapSection: FunctionComponent = observer(() => {
     accountStore.bech32Address
   ]);
 
+  const [isSending, setIsSending] = useState(false);
+
   const sendSwapMsg = async () => {
     const cosmosJS = new OsmosisApi({
       chainId: chainInfo.chainId,
@@ -162,21 +164,29 @@ export const SwapSection: FunctionComponent = observer(() => {
         new Int("9999999999999999")
       );
 
-      const result = (await cosmosJS.sendMsgs(
-        [msg],
-        { gas: "200000", memo: "", fee: [] },
-        "commit"
-      )) as any;
+      setIsSending(true);
 
-      if (result.status !== 200 || result.statusText !== "OK") {
-        toast.error("Failed to swap");
-      } else {
-        const code = result.data.code;
-        if (code) {
-          toast.error("Failed to swap: " + result.data.raw_log);
+      try {
+        const result = (await cosmosJS.sendMsgs(
+          [msg],
+          { gas: "200000", memo: "", fee: [] },
+          "commit"
+        )) as any;
+
+        if (result.status !== 200 || result.statusText !== "OK") {
+          toast.error("Failed to swap");
         } else {
-          toast("Success!");
+          const code = result.data.code;
+          if (code) {
+            toast.error("Failed to swap: " + result.data.raw_log);
+          } else {
+            toast("Success!");
+          }
         }
+      } catch {
+        toast.error("Failed to swap");
+      } finally {
+        setIsSending(false);
       }
     }
   };
@@ -323,6 +333,7 @@ export const SwapSection: FunctionComponent = observer(() => {
 
               await sendSwapMsg();
             }}
+            data-loading={isSending}
           >
             Swap
           </Button>

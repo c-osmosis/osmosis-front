@@ -6,3 +6,35 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
 // Core styles
 $asset-base-path: "/Users/yjh/osmosis-front/src/vendor";
 @import "./vendor/scss/blk-design-system-react.scss";
+
+@keyframes spinAround {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+button[data-loading="true"] {
+  color: transparent !important;
+  pointer-events: none;
+
+  &::after {
+    position: absolute !important;
+    left: calc(50% - (1em / 2));
+    top: calc(50% - (1em / 2));
+
+    -webkit-animation: spinAround 0.5s infinite linear;
+    animation: spinAround 0.5s infinite linear;
+    border: 2px solid #dbdbdb;
+    border-radius: 290486px;
+    border-right-color: transparent;
+    border-top-color: transparent;
+    content: "";
+    display: block;
+    height: 1em;
+    width: 1em;
+  }
+}
