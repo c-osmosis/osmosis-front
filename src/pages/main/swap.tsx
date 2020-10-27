@@ -167,7 +167,12 @@ export const SwapSection: FunctionComponent = observer(() => {
               <Col>
                 <Card style={{ textAlign: "center", marginBottom: 0 }}>
                   <CardHeader>Token to sell</CardHeader>
-                  <CardBody>
+                  <CardBody
+                    style={{
+                      display: "flex",
+                      justifyContent: "center"
+                    }}
+                  >
                     <Dropdown
                       isOpen={isTokenInDropdownOpen}
                       toggle={() => setIsTokenInDropdownOpen(value => !value)}
@@ -212,7 +217,12 @@ export const SwapSection: FunctionComponent = observer(() => {
               <Col>
                 <Card style={{ textAlign: "center", marginBottom: 0 }}>
                   <CardHeader>Token to buy</CardHeader>
-                  <CardBody>
+                  <CardBody
+                    style={{
+                      display: "flex",
+                      justifyContent: "center"
+                    }}
+                  >
                     <Dropdown
                       isOpen={isTokenOutDropdownOpen}
                       toggle={() => setIsTokenOutDropdownOpen(value => !value)}
