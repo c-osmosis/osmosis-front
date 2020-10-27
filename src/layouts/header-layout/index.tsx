@@ -30,7 +30,13 @@ export const HeaderLayout: FunctionComponent = observer(props => {
         }}
       >
         <Container>
-          <NavbarBrand href="/">Osmosis</NavbarBrand>
+          <NavbarBrand href="/">
+            <img
+              src={require("../../assets/osmo_logo.png")}
+              height={40}
+              width={130}
+            />
+          </NavbarBrand>
           {accountStore.bech32Address}
         </Container>
       </Navbar>
