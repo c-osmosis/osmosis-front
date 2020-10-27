@@ -25,6 +25,8 @@ import { MaxAmountIn, MsgJoinPool } from "../../osmosisjs/x/gamm";
 import { AccAddress } from "@chainapsis/cosmosjs/common/address";
 import { Int } from "@chainapsis/cosmosjs/common/int";
 import { OsmosisApi } from "../../osmosisjs/osmosis";
+import { toast } from "react-toastify";
+import { DecUtils } from "../../common/dec-utils";
 
 export const useSelectPool = (
   poolStore: PoolStore,
@@ -163,7 +165,12 @@ export const PoolInfo: FunctionComponent<{
       >
         <ModalBody>
           <Card>
-            <PoolTxModal pool={pool} />
+            <PoolTxModal
+              pool={pool}
+              requestCloseModal={() => {
+                setIsModalOpen(false);
+              }}
+            />
           </Card>
         </ModalBody>
       </Modal>
@@ -173,7 +180,10 @@ export const PoolInfo: FunctionComponent<{
 
 export const PoolTxModal: FunctionComponent<{
   pool: Pool;
-}> = ({ pool }) => {
+  requestCloseModal: () => void;
+}> = observer(({ pool, requestCloseModal }) => {
+  const { accountStore } = useStore();
+
   const [deposits, setDeposits] = useState<{
     [denom: string]: string;
   }>({});
@@ -215,10 +225,7 @@ export const PoolTxModal: FunctionComponent<{
       throw new Error("TODO: handle error");
     }
 
-    let precision = new Dec(1);
-    for (let i = 0; i < currency.coinDecimals; i++) {
-      precision = precision.mul(new Dec(10));
-    }
+    let precision = DecUtils.getPrecisionDec(currency.coinDecimals);
 
     if (deposits[poolDenoms[0]] && deposits[poolDenoms[0]] !== "0") {
       const ratio = new Dec(deposits[poolDenoms[0]])
@@ -230,6 +237,8 @@ export const PoolTxModal: FunctionComponent<{
       return new Int(0);
     }
   })();
+
+  const [isSending, setIsSending] = useState(false);
 
   const sendJoinPoolMsg = async () => {
     const maxAmountsIn: MaxAmountIn[] = poolDenoms.map(denom => {
@@ -256,13 +265,31 @@ export const PoolTxModal: FunctionComponent<{
         maxAmountsIn
       );
 
-      console.log(
-        await cosmosJS.sendMsgs(
+      setIsSending(true);
+
+      try {
+        const result = (await cosmosJS.sendMsgs(
           [msg],
           { gas: "200000", memo: "", fee: [] },
           "commit"
-        )
-      );
+        )) as any;
+
+        if (result.status !== 200 || result.statusText !== "OK") {
+          toast.error("Failed to swap");
+        } else {
+          const code = result.data.code;
+          if (code) {
+            toast.error("Failed to swap: " + result.data.raw_log);
+          } else {
+            toast("Success!");
+          }
+        }
+      } catch {
+        toast.error("Failed to swap");
+      } finally {
+        requestCloseModal();
+        setIsSending(false);
+      }
     }
   };
 
@@ -285,7 +312,13 @@ export const PoolTxModal: FunctionComponent<{
                 <Label>{currency.coinDenom}</Label>
                 <Input
                   type="number"
-                  value={deposits[currency.coinMinimalDenom] || ""}
+                  value={
+                    deposits[currency.coinMinimalDenom]
+                      ? DecUtils.trim(
+                          new Dec(deposits[currency.coinMinimalDenom])
+                        )
+                      : ""
+                  }
                   onChange={e => {
                     e.preventDefault();
 
@@ -321,17 +354,29 @@ export const PoolTxModal: FunctionComponent<{
             );
           })}
           <p style={{ color: "white" }}>
-            Expected Token Out: {poolAmountOut.toString()}
+            {/* Assume that the all liquidity token has the 6 decimals for now. */}
+            Expected Token Out:{" "}
+            {DecUtils.trim(
+              new Dec(poolAmountOut.toString()).quoTruncate(
+                DecUtils.getPrecisionDec(6)
+              )
+            )}
           </p>
           <Button
             type="submit"
             block
             color="success"
+            disabled={
+              !accountStore.bech32Address ||
+              !deposits[poolDenoms[0]] ||
+              deposits[poolDenoms[0]] === "0"
+            }
             onClick={async e => {
               e.preventDefault();
 
               await sendJoinPoolMsg();
             }}
+            data-loading={isSending}
           >
             Add Liquidity
           </Button>
@@ -339,4 +384,4 @@ export const PoolTxModal: FunctionComponent<{
       </Card>
     </div>
   );
-};
+});
