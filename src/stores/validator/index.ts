@@ -34,20 +34,6 @@ export class ValidatorStore {
 
     if (resultValidators.status === 200) {
       this.validators = resultValidators.data.validators;
-      console.log("validators:", resultValidators.data.validators);
     }
   }
-
-  // public getAvailablePools(
-  //   tokenInDenom: string,
-  //   tokenOutDenom: string
-  // ): Pool[] {
-  //   return this.validators.filter(pool => {
-  //     const poolDenoms = Object.keys(pool.records);
-  //     return (
-  //       poolDenoms.indexOf(tokenInDenom) >= 0 &&
-  //       poolDenoms.indexOf(tokenOutDenom) >= 0
-  //     );
-  //   });
-  // }
 }

@@ -11,8 +11,20 @@ export const currencies: Currency[] = [
     coinDenom: "OSMO",
     coinMinimalDenom: "uosmo",
     coinDecimals: 6
+  },
+  {
+    coinDenom: "ATOM from HUB",
+    coinMinimalDenom:
+      "ibc/6F4CBB9F6E71B5842970537C9C3AE9FB50361EEEED03CE2FC33F0FA4955D5938",
+    coinDecimals: 6
   }
 ];
+
+export const stakingCurrency: Currency = {
+  coinDenom: "STAKE",
+  coinMinimalDenom: "stake",
+  coinDecimals: 6
+};
 
 export const chainInfo: ChainInfo = {
   rpc: "http://localhost:26657",
