@@ -275,17 +275,17 @@ export const PoolTxModal: FunctionComponent<{
         )) as any;
 
         if (result.status !== 200 || result.statusText !== "OK") {
-          toast.error("Failed to swap");
+          toast.error("Failed to join pool");
         } else {
           const code = result.data.code;
           if (code) {
-            toast.error("Failed to swap: " + result.data.raw_log);
+            toast.error("Failed to join pool: " + result.data.raw_log);
           } else {
             toast("Success!");
           }
         }
       } catch {
-        toast.error("Failed to swap");
+        toast.error("Failed to join pool");
       } finally {
         requestCloseModal();
         setIsSending(false);
