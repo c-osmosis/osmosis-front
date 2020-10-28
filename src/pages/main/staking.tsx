@@ -22,6 +22,8 @@ import { AccAddress, ValAddress } from "@chainapsis/cosmosjs/common/address";
 import { GaiaApi } from "@chainapsis/cosmosjs/gaia/api";
 import { MsgDelegate } from "@chainapsis/cosmosjs/x/staking";
 import { Coin } from "@chainapsis/cosmosjs/common/coin";
+import { DecUtils } from "../../common/dec-utils";
+import { toast } from "react-toastify";
 
 export const StakingSection: FunctionComponent = observer(() => {
   const { validatorStore } = useStore();
@@ -58,7 +60,9 @@ export const ValidatorInfo: FunctionComponent<{
   const toggleModal = () => setIsModalOpen(value => !value);
 
   const moniker = validator.description.moniker;
-  const votingPower = validator.tokens;
+  const votingPower = new Dec(validator.tokens).quoTruncate(
+    DecUtils.getPrecisionDec(stakingCurrency.coinDecimals)
+  );
 
   return (
     <div
@@ -87,7 +91,7 @@ export const ValidatorInfo: FunctionComponent<{
           <tr>
             <th scope="row">1</th>
             <td> {moniker}</td>
-            <td>{votingPower}</td>
+            <td>{DecUtils.trim(votingPower)}</td>
             <td
               style={{
                 display: "flex",
@@ -123,7 +127,12 @@ export const ValidatorInfo: FunctionComponent<{
       >
         <ModalBody>
           <Card>
-            <StakingModal validator={validator} />
+            <StakingModal
+              validator={validator}
+              requestModalClose={() => {
+                setIsModalOpen(false);
+              }}
+            />
           </Card>
         </ModalBody>
       </Modal>
@@ -133,10 +142,13 @@ export const ValidatorInfo: FunctionComponent<{
 
 export const StakingModal: FunctionComponent<{
   validator: Validator;
-}> = observer(({ validator }) => {
+  requestModalClose: () => void;
+}> = observer(({ validator, requestModalClose }) => {
   const { accountStore } = useStore();
 
   const [amount, setAmount] = useState("");
+
+  const [isSending, setIsSending] = useState(false);
 
   const sendStakingMsg = async () => {
     const cosmosJS = new GaiaApi({
@@ -152,10 +164,7 @@ export const StakingModal: FunctionComponent<{
 
     const keys = await cosmosJS.getKeys();
 
-    let precision = new Dec(1);
-    for (let i = 0; i < stakingCurrency.coinDecimals; i++) {
-      precision = precision.mul(new Dec(10));
-    }
+    const precision = DecUtils.getPrecisionDec(stakingCurrency.coinDecimals);
 
     const amountDec = new Dec(amount).mulTruncate(precision);
 
@@ -166,13 +175,31 @@ export const StakingModal: FunctionComponent<{
         new Coin(stakingCurrency.coinMinimalDenom, amountDec.truncate())
       );
 
-      console.log(
-        await cosmosJS.sendMsgs(
+      setIsSending(true);
+
+      try {
+        const result = (await cosmosJS.sendMsgs(
           [msg],
           { gas: "200000", memo: "", fee: [] },
           "commit"
-        )
-      );
+        )) as any;
+
+        if (result.status !== 200 || result.statusText !== "OK") {
+          toast.error("Failed to stake");
+        } else {
+          const code = result.data.code;
+          if (code) {
+            toast.error("Failed to stake: " + result.data.raw_log);
+          } else {
+            toast("Success!");
+          }
+        }
+      } catch {
+        toast.error("Failed to stake");
+      } finally {
+        requestModalClose();
+        setIsSending(false);
+      }
     }
   };
 
@@ -203,6 +230,7 @@ export const StakingModal: FunctionComponent<{
               await sendStakingMsg();
             }}
             disabled={!accountStore.bech32Address}
+            data-loading={isSending}
           >
             Send Staking
           </Button>
