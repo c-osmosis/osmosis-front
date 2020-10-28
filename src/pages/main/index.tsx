@@ -52,7 +52,7 @@ export const MainPage: FunctionComponent = observer(() => {
                     setRole(Role.Pools);
                   }}
                 >
-                  Pools
+                  Pool
                 </Button>
                 <Button
                   style={{ flex: 1 }}
