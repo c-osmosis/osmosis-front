@@ -25,11 +25,13 @@ export class AccountStore {
   @actionAsync
   public async signInToWallet() {
     if (!window.cosmosJSWalletProvider) {
-      throw new Error("there is no wallet provider");
+      alert("Please install the Keplr extension");
+      return;
     }
 
     if (!window.keplr?.experimentalSuggestChain) {
-      throw new Error("please use the latest version of keplr");
+      alert("Please use the latest version of Keplr extension");
+      return;
     }
 
     await task(window.keplr.experimentalSuggestChain(chainInfo));
