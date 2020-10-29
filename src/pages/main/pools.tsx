@@ -137,7 +137,11 @@ export const PoolInfo: FunctionComponent<{
           .join(", ")}
       </p>
       <p style={{ fontSize: "1rem" }}>
-        Swap Fee: {new Dec(pool.swapFee).toString(2)}%
+        Swap Fee:{" "}
+        {new Dec(pool.swapFee)
+          .mulTruncate(DecUtils.getPrecisionDec(2))
+          .toString(2)}
+        %
       </p>
       <Progress multi>
         {weights.map((weight, i) => {
