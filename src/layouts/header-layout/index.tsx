@@ -31,14 +31,24 @@ export const HeaderLayout: FunctionComponent = observer(props => {
         "chain-id": chainInfo.chainId
       });
 
-      if (result.status === 200 || result.status === 202) {
+      if (
+        result.status === 200 ||
+        result.status === 201 ||
+        result.status === 202
+      ) {
         toast("Succeed to request some assets from faucet");
       } else {
         toast.error("Failed to request some assets from faucet");
       }
     } catch (e) {
       console.log(e);
-      toast.error("Failed to request some assets from faucet");
+      if (e.response?.data?.error) {
+        toast.error(
+          `Failed to request some assets from faucet: ${e.response.data.error}`
+        );
+      } else {
+        toast.error("Failed to request some assets from faucet");
+      }
     } finally {
       setIsRequestingFaucet(false);
     }
