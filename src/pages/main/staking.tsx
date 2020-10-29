@@ -50,7 +50,7 @@ export const StakingSection: FunctionComponent = observer(() => {
       <Card>
         <CardBody>
           {
-            <div>
+            <div style={{ paddingLeft: "1rem" }}>
               <h4 style={{ marginBottom: "0" }}>Available Asset</h4>
               <div style={{ color: "white", fontSize: "1.25rem" }}>
                 {stakingAsset}
