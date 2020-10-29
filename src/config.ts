@@ -3,6 +3,12 @@ import { defaultBech32Config } from "@chainapsis/cosmosjs/core/bech32Config";
 
 export const currencies: Currency[] = [
   {
+    coinDenom: "ATOM from HUB",
+    coinMinimalDenom:
+      "ibc/80A5BCB9B282BEED21DC25B647A1D5A6B7E1033052E598265B8DC780D9326F4F",
+    coinDecimals: 6
+  },
+  {
     coinDenom: "OSMO",
     coinMinimalDenom: "uosmo",
     coinDecimals: 6
@@ -16,11 +22,13 @@ export const currencies: Currency[] = [
     coinDenom: "DAI",
     coinMinimalDenom: "udai",
     coinDecimals: 6
-  },
+  }
+];
+
+export const lpCurrencies: Currency[] = [
   {
-    coinDenom: "ATOM from HUB",
-    coinMinimalDenom:
-      "ibc/80A5BCB9B282BEED21DC25B647A1D5A6B7E1033052E598265B8DC780D9326F4F",
+    coinDenom: "OPT",
+    coinMinimalDenom: "osmosis/pool/1",
     coinDecimals: 6
   },
   {
@@ -51,7 +59,7 @@ export const chainInfo: ChainInfo = {
     coinType: 118
   },
   bech32Config: defaultBech32Config("cosmos"),
-  currencies: [stakingCurrency].concat(currencies),
+  currencies: [stakingCurrency].concat(lpCurrencies).concat(currencies),
   feeCurrencies: [
     {
       coinDenom: "OSMO",
