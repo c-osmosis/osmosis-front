@@ -225,34 +225,7 @@ export const PoolTxModal: FunctionComponent<{
     [denom: string]: string;
   }>({});
 
-  const [ratios, setRatios] = useState<{
-    [denom: string]: Dec;
-  }>({});
-
   const poolDenoms = Object.keys(pool.records);
-  const totalWeight = poolDenoms.reduce((accumulator: Dec, currentValue) => {
-    const weight = pool.records[currentValue];
-
-    return accumulator.add(new Dec(weight.denormalizedWeight));
-  }, new Dec(0));
-
-  useEffect(() => {
-    const poolDenoms = Object.keys(pool.records);
-
-    const ratios: {
-      [denom: string]: Dec;
-    } = {};
-
-    for (const denom of poolDenoms) {
-      const record = pool.records[denom];
-
-      ratios[denom] = new Dec(record.denormalizedWeight).quoTruncate(
-        totalWeight
-      );
-    }
-
-    setRatios(ratios);
-  }, [pool]);
 
   const poolAmountOut = (() => {
     const currency = currencies.find(
@@ -362,19 +335,23 @@ export const PoolTxModal: FunctionComponent<{
                     e.preventDefault();
 
                     if (e.target.value) {
-                      const deposit = new Dec(e.target.value);
+                      const deposit = new Dec(e.target.value).mulTruncate(
+                        DecUtils.getPrecisionDec(currency.coinDecimals)
+                      );
                       const newDeposits = Object.assign({}, deposits);
 
-                      const mul = deposit.quoTruncate(
-                        ratios[currency.coinMinimalDenom]
+                      const base = deposit.quoTruncate(
+                        new Dec(pool.records[currency.coinMinimalDenom].balance)
                       );
 
                       newDeposits[currency.coinMinimalDenom] = e.target.value;
 
                       for (const denom of poolDenoms) {
                         if (denom !== currency.coinMinimalDenom) {
-                          newDeposits[denom] = mul
-                            .mulTruncate(ratios[denom])
+                          newDeposits[denom] = base
+                            .mulTruncate(new Dec(pool.records[denom].balance))
+                            // For now, assume that all currencies have 6 decimals...
+                            .quoTruncate(DecUtils.getPrecisionDec(6))
                             .toString();
                         }
                       }
