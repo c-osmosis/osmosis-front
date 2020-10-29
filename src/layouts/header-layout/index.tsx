@@ -1,17 +1,48 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useState } from "react";
 
-import { Container, Navbar, NavbarBrand } from "reactstrap";
+import { Button, Container, Navbar, NavbarBrand } from "reactstrap";
 import { observer } from "mobx-react";
 import { useStore } from "../../stores";
 
 import style from "./style.module.scss";
 
 import classnames from "classnames";
+import Axios from "axios";
+import { chainInfo, faucetURL } from "../../config";
+import { toast } from "react-toastify";
 
 export const HeaderLayout: FunctionComponent = observer(props => {
   const { children } = props;
 
   const { accountStore } = useStore();
+
+  const [isRequestingFaucet, setIsRequestingFaucet] = useState(false);
+
+  const requestFaucet = async () => {
+    const instance = Axios.create({
+      baseURL: faucetURL
+    });
+
+    setIsRequestingFaucet(true);
+
+    try {
+      const result = await instance.post("", {
+        address: accountStore.bech32Address,
+        "chain-id": chainInfo.chainId
+      });
+
+      if (result.status === 200 || result.status === 202) {
+        toast("Succeed to request some assets from faucet");
+      } else {
+        toast.error("Failed to request some assets from faucet");
+      }
+    } catch (e) {
+      console.log(e);
+      toast.error("Failed to request some assets from faucet");
+    } finally {
+      setIsRequestingFaucet(false);
+    }
+  };
 
   return (
     <div>
@@ -37,7 +68,21 @@ export const HeaderLayout: FunctionComponent = observer(props => {
               width={130}
             />
           </NavbarBrand>
-          {accountStore.bech32Address}
+          <div>
+            <Button
+              color="success"
+              disabled={!accountStore.bech32Address}
+              data-loading={isRequestingFaucet}
+              onClick={async e => {
+                e.preventDefault();
+
+                await requestFaucet();
+              }}
+            >
+              Faucet
+            </Button>
+            {accountStore.bech32Address}
+          </div>
         </Container>
       </Navbar>
       <div>{children}</div>
