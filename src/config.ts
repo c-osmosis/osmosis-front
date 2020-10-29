@@ -22,18 +22,28 @@ export const currencies: Currency[] = [
     coinMinimalDenom:
       "ibc/80A5BCB9B282BEED21DC25B647A1D5A6B7E1033052E598265B8DC780D9326F4F",
     coinDecimals: 6
+  },
+  {
+    coinDenom: "OPT (Pool 2)",
+    coinMinimalDenom: "osmosis/pool/2",
+    coinDecimals: 6
+  },
+  {
+    coinDenom: "OPT (Pool 3)",
+    coinMinimalDenom: "osmosis/pool/3",
+    coinDecimals: 6
   }
 ];
 
 export const stakingCurrency: Currency = {
-  coinDenom: "LP",
+  coinDenom: "OPT",
   coinMinimalDenom: "osmosis/pool/1",
   coinDecimals: 6
 };
 
 export const chainInfo: ChainInfo = {
-  rpc: "http://35.236.124.69:26657",
-  rest: "http://35.236.124.69:1317",
+  rpc: "https://node.c-osmosis.com/rpc",
+  rest: "https://node.c-osmosis.com/rest",
   chainId: "osmosis-4",
   chainName: "Osmosis",
   stakeCurrency: stakingCurrency,
@@ -41,7 +51,7 @@ export const chainInfo: ChainInfo = {
     coinType: 118
   },
   bech32Config: defaultBech32Config("cosmos"),
-  currencies: currencies,
+  currencies: [stakingCurrency].concat(currencies),
   feeCurrencies: [
     {
       coinDenom: "OSMO",
@@ -52,4 +62,4 @@ export const chainInfo: ChainInfo = {
   features: ["stargate"]
 };
 
-export const faucetURL = "http://35.236.124.69:8000";
+export const faucetURL = "https://node.c-osmosis.com/faucet/";

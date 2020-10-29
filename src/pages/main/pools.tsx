@@ -91,9 +91,29 @@ export const PoolsSection: FunctionComponent = observer(() => {
 
 export const PoolInfo: FunctionComponent<{
   pool: Pool;
-}> = ({ pool }) => {
+}> = observer(({ pool }) => {
+  const { accountStore } = useStore();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const toggleModal = () => setIsModalOpen(value => !value);
+
+  const poolTokenTotalSupply = useMemo(() => {
+    return new Int(pool.token.totalSupply);
+  }, [pool.token.totalSupply]);
+
+  const myPoolToken = useMemo(() => {
+    return accountStore.assets.find(asset => asset.denom === pool.token.denom);
+  }, [accountStore.assets, pool.token.denom]);
+
+  const myPoolShare = useMemo(() => {
+    if (myPoolToken && poolTokenTotalSupply.gt(new Int(0))) {
+      return new Dec(myPoolToken.amount).quoTruncate(
+        new Dec(poolTokenTotalSupply)
+      );
+    } else {
+      return new Dec(0);
+    }
+  }, [poolTokenTotalSupply, myPoolToken]);
 
   const poolDenoms = Object.keys(pool.records);
   const totalWeight = poolDenoms.reduce((accumulator: Dec, currentValue) => {
@@ -131,12 +151,25 @@ export const PoolInfo: FunctionComponent<{
         setIsModalOpen(true);
       }}
     >
-      <p style={{ fontSize: "1.2rem" }}>
+      <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
         {weights
           .map(weight => `${weight.symbol} (${weight.weight}%)`)
           .join(", ")}
       </p>
-      <p style={{ fontSize: "1rem" }}>
+      <p
+        style={{
+          fontSize: "1rem",
+          display: "inline-block",
+          marginRight: "0.5rem"
+        }}
+      >
+        My Share:{" "}
+        {DecUtils.trim(
+          myPoolShare.mulTruncate(DecUtils.getPrecisionDec(2)).toString(2)
+        )}
+        % /
+      </p>
+      <p style={{ fontSize: "1rem", display: "inline-block" }}>
         Swap Fee:{" "}
         {new Dec(pool.swapFee)
           .mulTruncate(DecUtils.getPrecisionDec(2))
@@ -180,7 +213,7 @@ export const PoolInfo: FunctionComponent<{
       </Modal>
     </div>
   );
-};
+});
 
 export const PoolTxModal: FunctionComponent<{
   pool: Pool;
@@ -293,6 +326,8 @@ export const PoolTxModal: FunctionComponent<{
       } finally {
         requestCloseModal();
         setIsSending(false);
+
+        accountStore.fetchAssets();
       }
     }
   };

@@ -187,6 +187,8 @@ export const SwapSection: FunctionComponent = observer(() => {
         toast.error("Failed to swap");
       } finally {
         setIsSending(false);
+
+        accountStore.fetchAssets();
       }
     }
   };

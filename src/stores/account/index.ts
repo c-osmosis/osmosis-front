@@ -1,15 +1,26 @@
-import { observable } from "mobx";
+import { action, observable } from "mobx";
 
 import { GaiaApi } from "@chainapsis/cosmosjs/gaia/api";
 
 import { actionAsync, task } from "mobx-utils";
 import { chainInfo } from "../../config";
 import { RootStore } from "../root";
+import { Coin } from "@chainapsis/cosmosjs/common/coin";
+import Axios from "axios";
 
 export class AccountStore {
   @observable public bech32Address!: string;
 
-  constructor(private readonly rootStore: RootStore) {}
+  @observable public assets!: Coin[];
+
+  constructor(private readonly rootStore: RootStore) {
+    this.init();
+  }
+
+  @action
+  private init() {
+    this.assets = [];
+  }
 
   @actionAsync
   public async signInToWallet() {
@@ -42,5 +53,36 @@ export class AccountStore {
     this.bech32Address = keys[0].bech32Address;
 
     this.rootStore.accountLoaded();
+
+    this.fetchAssets();
+  }
+
+  @actionAsync
+  public async fetchAssets() {
+    const restInstance = Axios.create({
+      baseURL: chainInfo.rest
+    });
+
+    const result = await task(
+      restInstance.get<{
+        result: {
+          denom: string;
+          amount: string;
+        }[];
+      }>(`/bank/balances/${this.bech32Address}`)
+    );
+
+    if (result.status !== 200) {
+      throw new Error(result.statusText);
+    }
+
+    const assets: Coin[] = [];
+
+    for (const asset of result.data.result) {
+      const coin = new Coin(asset.denom, asset.amount);
+      assets.push(coin);
+    }
+
+    this.assets = assets;
   }
 }

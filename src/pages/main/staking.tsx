@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { useStore } from "../../stores";
 import {
@@ -26,12 +26,37 @@ import { DecUtils } from "../../common/dec-utils";
 import { toast } from "react-toastify";
 
 export const StakingSection: FunctionComponent = observer(() => {
-  const { validatorStore } = useStore();
+  const { accountStore, validatorStore } = useStore();
+
+  const stakingAsset: string = useMemo(() => {
+    const stakingAsset = accountStore.assets.find(
+      asset => asset.denom === stakingCurrency.coinMinimalDenom
+    );
+    if (stakingAsset) {
+      return (
+        DecUtils.trim(
+          new Dec(stakingAsset.amount).quoTruncate(
+            DecUtils.getPrecisionDec(stakingCurrency.coinDecimals)
+          )
+        ) + stakingCurrency.coinDenom
+      );
+    } else {
+      return "0";
+    }
+  }, [accountStore.assets]);
 
   return (
     <Row>
       <Card>
         <CardBody>
+          {
+            <div>
+              <h4 style={{ marginBottom: "0" }}>Available Asset</h4>
+              <div style={{ color: "white", fontSize: "1.25rem" }}>
+                {stakingAsset}
+              </div>
+            </div>
+          }
           {validatorStore.validators.map((validator, i) => {
             return (
               <React.Fragment key={i.toString()}>
@@ -144,7 +169,7 @@ export const StakingModal: FunctionComponent<{
   validator: Validator;
   requestModalClose: () => void;
 }> = observer(({ validator, requestModalClose }) => {
-  const { accountStore } = useStore();
+  const { accountStore, validatorStore } = useStore();
 
   const [amount, setAmount] = useState("");
 
@@ -199,6 +224,9 @@ export const StakingModal: FunctionComponent<{
       } finally {
         requestModalClose();
         setIsSending(false);
+
+        accountStore.fetchAssets();
+        validatorStore.fetchAllValidators();
       }
     }
   };
